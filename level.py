@@ -8,11 +8,11 @@ class Level:
 
         self.all_sprites = CameraGroup()
 
-        self.player = Player((150, 50), [self.all_sprites, self.all_sprites])
+        self.player = Player((750, 500), [self.all_sprites])
 
     def run(self, dt):
         self.all_sprites.update(dt)
-        self.all_sprites.calculate_offset(self.player)
+        self.all_sprites.set_offset(self.player)
         self.all_sprites.draw_floor()
         self.all_sprites.draw_sprites()
 
@@ -29,10 +29,10 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2(0, 0)
 
         # Floor attributes
-        self.floor_surface = pygame.image.load('./map/map.png').convert()
+        self.floor_surface = pygame.image.load('assets/map/map.png').convert()
         self.floor_rect = self.floor_surface.get_rect(topleft=(0, 0))
 
-    def calculate_offset(self, player: Player) -> tuple[int, int]:
+    def set_offset(self, player: Player) -> None:
         offset_x = player.rect.centerx - self.half_width
         offset_y = player.rect.centery - self.half_height
         self.offset.x, self.offset.y = offset_x, offset_y
@@ -43,7 +43,6 @@ class CameraGroup(pygame.sprite.Group):
         self.display_surface.blit(self.floor_surface, offset_rect)
 
     def draw_sprites(self):
-        print(self.offset)
         for sprite in self.sprites():
             offset_rect = sprite.rect.copy()
             offset_rect.center -= self.offset
