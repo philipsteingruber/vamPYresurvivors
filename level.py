@@ -1,5 +1,7 @@
 import pygame
 from player import Player
+from monster import Monster
+import random
 
 
 class Level:
@@ -7,14 +9,21 @@ class Level:
         self.display_surface = pygame.display.get_surface()
 
         self.all_sprites = CameraGroup()
+        self.monster_sprites: pygame.sprite.Group[Monster] = pygame.sprite.Group()
 
         self.player = Player((750, 500), [self.all_sprites])
+
+        for _ in range(25):
+            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(500, 1000), random.randint(500, 1000)), monster_type='slime')
 
     def run(self, dt):
         self.all_sprites.update(dt)
         self.all_sprites.set_offset(self.player)
         self.all_sprites.draw_floor()
         self.all_sprites.draw_sprites()
+
+        for monster in self.monster_sprites:
+            monster.update_monster(self.player.rect.center, dt)
 
 
 class CameraGroup(pygame.sprite.Group):
