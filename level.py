@@ -2,10 +2,10 @@ import random
 
 import pygame
 
+from debug import debug
 from monster import Monster
 from player import Player
 from settings import MONSTER_SIZE
-from debug import debug
 
 
 class Level:
@@ -41,29 +41,49 @@ class Level:
 
         return [nw_monsters, ne_monsters, se_monsters, sw_monsters]
 
+    # TODO: Borde man istället typ räkna ut vektorn mellan dom och bara flytta isär?
+    '''
     @staticmethod
     def check_monster_collisions(monster_quadrants: list[list[Monster]]):
         allowed_overlap = MONSTER_SIZE // 3
-        for quadrant_monsters in monster_quadrants:
-            for monster in quadrant_monsters:
-                for other_monster in quadrant_monsters:
-                    if monster.pos != other_monster.pos and not monster.collided.active and not other_monster.collided.active:
-                        old_pos = monster.pos
-                        if monster.pos.y - other_monster.pos.y < allowed_overlap:
+        push_distance = allowed_overlap / 3
+        for quadrant in monster_quadrants:
+            for monster in quadrant:
+                for other_monster in quadrant:
+                    debug((abs(monster.pos.y - other_monster.pos.y), abs(monster.pos.x - other_monster.pos.x)))
+                    if monster is not other_monster and not monster.collided.active and not other_monster.collided.active:
+                        if abs(monster.pos.y - other_monster.pos.y) < allowed_overlap:
                             if monster.pos.y < other_monster.pos.y:
-                                monster.pos.y -= allowed_overlap
+                                print('y < other monster')
+                                monster.pos.y -= push_distance
                             else:
-                                monster.pos.y += allowed_overlap
-                        if monster.pos.x - other_monster.pos.y < allowed_overlap:
-                            if monster.pos.x < other_monster.pos.x:
-                                monster.pos.x -= allowed_overlap
-                            else:
-                                monster.pos.x += allowed_overlap
-                        if monster.pos != old_pos:
-                            print('moved')
+                                print('y > other monster')
+                                monster.pos.y += push_distance
                             monster.rect.center = monster.pos
                             monster.collided.activate()
                             other_monster.collided.activate()
+                        if abs(monster.pos.x - other_monster.pos.x) < allowed_overlap:
+                            if monster.pos.x < other_monster.pos.x:
+                                print('x < other monster')
+                                monster.pos.x -= push_distance
+                            else:
+                                print('x > other monster')
+                                monster.pos.x += push_distance
+                            monster.rect.center = monster.pos
+                            # monster.collided.activate()
+                            # other_monster.collided.activate()
+    '''
+
+    def check_monster_collisions(self, monster_quadrants: list[list[Monster]]):
+        for quadrant in monster_quadrants:
+            for monster in quadrant:
+                other_monster: Monster
+                for other_monster in pygame.sprite.spritecollide(monster, self.monster_sprites, dokill=False):
+                    collision_vector = pygame.math.Vector2(monster.pos - other_monster.pos) * 0.5
+                    monster.pos += collision_vector
+                    monster.rect.center = monster.pos
+                    other_monster.pos -= collision_vector
+                    other_monster.rect.center = other_monster.pos
 
     @staticmethod
     def get_monster_distance(monster_x: Monster, monster_y: Monster) -> float:
@@ -78,10 +98,10 @@ class Level:
         for monster in self.monster_sprites:
             monster.update_monster(player_pos=self.player.rect.center, dt=dt)
 
-        self.check_monster_collisions(self.create_monster_quadrants())
+        # self.check_monster_collisions(self.create_monster_quadrants())
+        self.check_monster_collisions([self.monster_sprites])
 
-        if dt > 0:
-            debug(1/dt)
+
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self) -> None:

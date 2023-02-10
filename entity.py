@@ -1,5 +1,7 @@
-import pygame
 from typing import Union
+
+import pygame
+
 from utils import Status
 
 

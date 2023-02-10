@@ -3,8 +3,8 @@ import sys
 
 import pygame
 
-from settings import DIMENSIONS
 from level import Level
+from settings import DIMENSIONS
 
 
 class Game:

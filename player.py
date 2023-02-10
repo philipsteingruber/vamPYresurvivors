@@ -1,6 +1,7 @@
 import pygame
-from utils import import_images_from_folder, Status
+
 from entity import Entity
+from utils import import_images_from_folder, Status
 
 
 class Player(Entity):
@@ -22,20 +23,21 @@ class Player(Entity):
                 animations[animation] = import_images_from_folder(path=full_path, scale_factor=2.5, flip=False)
         return animations
 
-    def get_direction_normalized(self) -> pygame.math.Vector2:
+    @staticmethod
+    def get_direction_normalized() -> pygame.math.Vector2:
         keys = pygame.key.get_pressed()
 
         direction = pygame.math.Vector2(0, 0)
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
             direction.y = -1
-        elif keys[pygame.K_DOWN]:
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             direction.y = 1
         else:
             direction.y = 0
 
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             direction.x = -1
-        elif keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             direction.x = 1
         else:
             direction.x = 0

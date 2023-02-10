@@ -1,5 +1,6 @@
-import pygame
 import os
+
+import pygame
 
 
 def import_images_from_folder(path: str, scale_factor: float = 1, flip: bool = False) -> list[pygame.Surface]:

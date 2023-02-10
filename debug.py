@@ -1,5 +1,7 @@
 import pygame
+
 from settings import DIMENSIONS
+
 pygame.init()
 font = pygame.font.Font(None, 30)
 
