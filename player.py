@@ -66,10 +66,6 @@ class Player(Entity):
                 self.frame_index = 0
             self.status.direction = direction
 
-    def move(self, dt):
-        self.pos += (self.direction * self.movement_speed * dt)
-        self.rect.center = self.pos
-
     def update(self, dt):
         self.direction = self.get_direction_normalized()
         self.move(dt)

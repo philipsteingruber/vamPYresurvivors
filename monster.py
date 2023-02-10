@@ -3,13 +3,15 @@ import pygame
 from entity import Entity
 from utils import import_images_from_folder
 import random
+from timer import Timer
 
 
 class Monster(Entity):
     def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], monster_type: str):
         self.monster_type = monster_type
-        self.movement_speed = 150
         super().__init__(groups, pos, 'idle')
+        self.movement_speed = 150
+        self.collided = Timer(100)
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'idle': [], 'walk': []}
@@ -25,7 +27,7 @@ class Monster(Entity):
 
         return animations
 
-    def calculate_player_direction(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
+    def get_player_direction(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
         monster_vec = pygame.math.Vector2(self.rect.center)
         player_vec = pygame.math.Vector2(player_pos)
 
@@ -34,13 +36,17 @@ class Monster(Entity):
             result_vec = result_vec.normalize()
         return result_vec
 
-    def move(self, dt):
-        self.pos += (self.direction * self.movement_speed * dt)
-        self.rect.center = self.pos
+    def get_player_distance(self, player_pos: tuple[int, int]):
+        monster_vec = pygame.math.Vector2(self.rect.center)
+        player_vec = pygame.math.Vector2(player_pos)
+
+        result_vec = player_vec - monster_vec
+        return result_vec.magnitude()
 
     def update_monster(self, player_pos: tuple[int, int], dt):
-        self.direction = self.calculate_player_direction(player_pos)
+        self.direction = self.get_player_direction(player_pos)
         self.move(dt)
 
     def update(self, dt) -> None:
         self.animate(dt)
+        self.collided.update()
