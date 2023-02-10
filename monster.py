@@ -3,7 +3,6 @@ import random
 import pygame
 
 from entity import Entity
-from timer import Timer
 from utils import import_images_from_folder
 
 
@@ -11,8 +10,8 @@ class Monster(Entity):
     def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], monster_type: str):
         self.monster_type = monster_type
         super().__init__(groups, pos, 'idle')
-        self.movement_speed = 150
-        self.collided = Timer(100)
+        self.movement_speed = 100
+        self.rect = self.rect.inflate(-40, -40)
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'idle': [], 'walk': []}
@@ -50,4 +49,3 @@ class Monster(Entity):
 
     def update(self, dt) -> None:
         self.animate(dt)
-        self.collided.update()
