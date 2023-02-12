@@ -27,7 +27,7 @@ class Monster(Entity):
 
         return animations
 
-    def get_player_direction(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
+    def get_player_direction_normalized(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
         monster_vec = pygame.math.Vector2(self.rect.center)
         player_vec = pygame.math.Vector2(player_pos)
 
@@ -35,6 +35,12 @@ class Monster(Entity):
         if result_vec.magnitude() > 0:
             result_vec = result_vec.normalize()
         return result_vec
+
+    def get_player_direction(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
+        monster_vec = pygame.math.Vector2(self.rect.center)
+        player_vec = pygame.math.Vector2(player_pos)
+
+        return player_vec - monster_vec
 
     def get_player_distance(self, player_pos: tuple[int, int]):
         monster_vec = pygame.math.Vector2(self.rect.center)
@@ -44,7 +50,14 @@ class Monster(Entity):
         return result_vec.magnitude()
 
     def update_monster(self, player_pos: tuple[int, int], dt):
-        self.direction = self.get_player_direction(player_pos)
+        if self.direction.magnitude() > 0:
+            current_dir = self.direction.as_polar()
+            player_dir = self.get_player_direction_normalized(player_pos).as_polar()
+            mid = (current_dir[1] + player_dir[1]) / 2
+            self.direction = self.direction.rotate(mid - current_dir[1])
+        else:
+            self.direction = self.get_player_direction_normalized(player_pos)
+
         self.move(dt)
 
     def update(self, dt) -> None:

@@ -1,3 +1,4 @@
+from math import atan2, degrees, pi
 from typing import Union
 
 import pygame
@@ -24,6 +25,16 @@ class Entity(pygame.sprite.Sprite):
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         return {}
+
+    @staticmethod
+    def calculate_angle_between_vectors(v1: pygame.math.Vector2, v2: pygame.math.Vector2) -> float:
+        dx = v1.x - v2.x
+        dy = v1.y - v2.y
+
+        rads = atan2(-dy, dx)
+        rads %= 2 * pi
+        degs = degrees(rads)
+        return degs
 
     def animate(self, dt):
         self.frame_index += self.animation_speed * dt

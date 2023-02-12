@@ -5,7 +5,6 @@ import pygame
 from debug import debug
 from monster import Monster
 from player import Player
-from settings import MONSTER_SIZE
 
 
 class Level:
@@ -17,8 +16,8 @@ class Level:
 
         self.player = Player((750, 500), [self.all_sprites])
 
-        for _ in range(200):
-            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(500, 1000), random.randint(500, 1000)), monster_type='slime')
+        for _ in range(300):
+            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(500, 1500), random.randint(500, 1500)), monster_type='slime')
 
     def create_monster_quadrants(self) -> list[pygame.sprite.Group]:
         nw_monsters = []
@@ -29,7 +28,7 @@ class Level:
         player_pos = self.player.rect.center
         for monster in self.monster_sprites:
             if not (monster.get_player_distance(player_pos) > (self.display_surface.get_width() / 2) + 100):
-                player_dir: pygame.math.Vector2 = monster.get_player_direction(player_pos)
+                player_dir: pygame.math.Vector2 = monster.get_player_direction_normalized(player_pos)
                 if player_dir.x >= 0 and player_dir.y >= 0:
                     se_monsters.append(monster)
                 elif player_dir.x >= 0 and player_dir.y <= 0:
@@ -70,9 +69,12 @@ class Level:
         for monster in self.monster_sprites:
             monster.update_monster(player_pos=self.player.rect.center, dt=dt)
 
+        # TODO: Start using quadrants if we get performance issues
         # self.check_monster_collisions(self.create_monster_quadrants())
         self.check_monster_collisions([self.monster_sprites])
 
+        if dt > 0:
+            debug(1/dt)
 
 
 class CameraGroup(pygame.sprite.Group):
