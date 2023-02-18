@@ -1,5 +1,4 @@
-from math import atan2, degrees, pi
-from typing import Union
+from typing import Union, Sequence
 
 import pygame
 
@@ -7,7 +6,7 @@ from utils import Status
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], status: Union[Status, str]) -> None:
+    def __init__(self, groups: Union[Sequence[pygame.sprite.Group]], pos: tuple[int, int], status: Union[Status, str]) -> None:
         super().__init__(groups)
 
         self.animation_frames = self.import_frames()
@@ -26,16 +25,6 @@ class Entity(pygame.sprite.Sprite):
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         return {}
 
-    @staticmethod
-    def calculate_angle_between_vectors(v1: pygame.math.Vector2, v2: pygame.math.Vector2) -> float:
-        dx = v1.x - v2.x
-        dy = v1.y - v2.y
-
-        rads = atan2(-dy, dx)
-        rads %= 2 * pi
-        degs = degrees(rads)
-        return degs
-
     def animate(self, dt):
         self.frame_index += self.animation_speed * dt
         if self.frame_index >= len(self.animation_frames[str(self.status)]):
@@ -43,6 +32,8 @@ class Entity(pygame.sprite.Sprite):
         self.image = self.get_animation_frame_by_index(int(self.frame_index))
 
     def move(self, dt):
+        if hasattr(self, 'attack_type'):
+            print('attack moving')
         self.pos += (self.direction * self.movement_speed * dt)
         self.rect.center = self.pos
 

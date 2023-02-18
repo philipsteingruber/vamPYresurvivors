@@ -2,13 +2,19 @@ import pygame
 
 from entity import Entity
 from utils import import_images_from_folder, Status
+from typing import Callable
+from timer import Timer
 
 
 class Player(Entity):
-    def __init__(self, pos: tuple[int, int], groups: list[pygame.sprite.Group]):
+    def __init__(self, pos: tuple[int, int], groups: list[pygame.sprite.Group], create_attack: Callable):
         super().__init__(groups, pos, Status(direction='down', action='idle'))
 
         self.movement_speed = 250
+        self.create_attack = create_attack
+        self.attack_timers = {'magic_wand': Timer(duration=2000)}
+        for timer in self.attack_timers.values():
+            timer.activate()
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'down_idle': [], 'left_idle': [], 'right_idle': [], 'up_idle': [], 'down_walk': [], 'left_walk': [], 'right_walk': [], 'up_walk': []}
@@ -52,6 +58,8 @@ class Player(Entity):
             action = 'idle'
         else:
             action = 'walk'
+        if action != self.status.action:
+            self.frame_index = 0
         self.status.action = action
 
         direction = None
@@ -73,3 +81,11 @@ class Player(Entity):
         self.move(dt)
         self.set_status()
         self.animate(dt)
+        for timer in self.attack_timers.values():
+            timer.update()
+        attack_type: str
+        timer: Timer
+        for attack_type, timer in self.attack_timers.items():
+            if not timer.active:
+                self.create_attack(attack_type)
+                timer.activate()

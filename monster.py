@@ -4,6 +4,7 @@ import pygame
 
 from entity import Entity
 from utils import import_images_from_folder
+from timer import Timer
 
 
 class Monster(Entity):
@@ -12,6 +13,12 @@ class Monster(Entity):
         super().__init__(groups, pos, 'idle')
         self.movement_speed = 100
         self.rect = self.rect.inflate(-40, -40)
+
+        self.turned = Timer(200)
+
+        self.animation_speed = round(random.triangular(4.5, 5.5), 2)
+
+        self.health = 100
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'idle': [], 'walk': []}
@@ -42,15 +49,15 @@ class Monster(Entity):
 
         return player_vec - monster_vec
 
-    def get_player_distance(self, player_pos: tuple[int, int]):
+    def get_player_distance(self, player_pos: tuple[int, int]) -> float:
         monster_vec = pygame.math.Vector2(self.rect.center)
         player_vec = pygame.math.Vector2(player_pos)
 
         result_vec = player_vec - monster_vec
         return result_vec.magnitude()
 
-    def update_monster(self, player_pos: tuple[int, int], dt):
-        if self.direction.magnitude() > 0:
+    def update_direction(self, player_pos: tuple[int, int]) -> None:
+        if self.direction.magnitude() > 1:
             current_dir = self.direction.as_polar()
             player_dir = self.get_player_direction_normalized(player_pos).as_polar()
             mid = (current_dir[1] + player_dir[1]) / 2
@@ -58,7 +65,13 @@ class Monster(Entity):
         else:
             self.direction = self.get_player_direction_normalized(player_pos)
 
+    def update_monster(self, player_pos: tuple[int, int], dt: float) -> None:
+        if not self.turned.active:
+            self.update_direction(player_pos)
+            self.turned.activate()
+        else:
+            self.turned.update()
         self.move(dt)
 
-    def update(self, dt) -> None:
+    def update(self, dt: float) -> None:
         self.animate(dt)

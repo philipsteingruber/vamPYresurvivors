@@ -5,19 +5,24 @@ import pygame
 from debug import debug
 from monster import Monster
 from player import Player
+from entity import Entity
+from attack import Attack
+from pygame.math import Vector2
+from typing import Union
 
 
 class Level:
-    def __init__(self):
+    def __init__(self) -> None:
         self.display_surface = pygame.display.get_surface()
 
         self.all_sprites = CameraGroup()
         self.monster_sprites: pygame.sprite.Group[Monster] = pygame.sprite.Group()
+        self.attack_sprites: pygame.sprite.Group[Attack] = pygame.sprite.Group()
 
-        self.player = Player((750, 500), [self.all_sprites])
+        self.player = Player(pos=(750, 500), groups=[self.all_sprites], create_attack=self.create_attack)
 
-        for _ in range(300):
-            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(500, 1500), random.randint(500, 1500)), monster_type='slime')
+        for _ in range(5):
+            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(-500, 1500), random.randint(-500, 1500)), monster_type='slime')
 
     def create_monster_quadrants(self) -> list[pygame.sprite.Group]:
         nw_monsters = []
@@ -41,40 +46,50 @@ class Level:
         return [pygame.sprite.Group(nw_monsters), pygame.sprite.Group(ne_monsters), pygame.sprite.Group(se_monsters), pygame.sprite.Group(sw_monsters)]
 
     @staticmethod
-    def check_monster_collisions(monster_quadrants: list[pygame.sprite.Group]):
+    def check_monster_collisions(monster_quadrants: list[pygame.sprite.Group]) -> None:
         sprite_radius = 14
         for quadrant in monster_quadrants:
             for monster in quadrant:
                 other_monster: Monster
                 for other_monster in quadrant:
-                    if other_monster is not monster:
-                        collision_vector = pygame.math.Vector2(monster.pos - other_monster.pos) * 0.5
-                        if collision_vector.magnitude() < sprite_radius:
-                            collision_vector = collision_vector.normalize() * (abs(sprite_radius-collision_vector.magnitude()))
-                            monster.pos += collision_vector
-                            monster.rect.center = monster.pos
-                            other_monster.pos -= collision_vector
-                            other_monster.rect.center = other_monster.pos
+                    if monster is other_monster:
+                        continue
+                    collision_vector = pygame.math.Vector2(monster.pos - other_monster.pos) * 0.5
+                    if collision_vector.magnitude() < sprite_radius:
+                        collision_vector = collision_vector.normalize() * (abs(sprite_radius-collision_vector.magnitude()))
+                        monster.pos += collision_vector
+                        monster.rect.center = monster.pos
+                        other_monster.pos -= collision_vector
+                        other_monster.rect.center = other_monster.pos
+
+    def create_attack(self, attack_type: str) -> None:
+        if attack_type == 'magic_wand':
+            monster_sprites_by_distance = sorted(self.monster_sprites.sprites(), key=self.monster_distance_to_player)
+            nearest_monster: Monster = monster_sprites_by_distance[0]
+            Attack(pos=self.player.rect.center, direction=self.vector_between_sprites(nearest_monster, self.player).normalize(), attack_type=attack_type, groups=[self.attack_sprites, self.all_sprites])
+
+    def monster_distance_to_player(self, monster: Monster):
+        return self.vector_between_sprites(self.player, monster).magnitude()
 
     @staticmethod
-    def get_monster_distance(monster_x: Monster, monster_y: Monster) -> float:
-        return (pygame.math.Vector2(monster_x.rect.center) - pygame.math.Vector2(monster_y.rect.center)).magnitude()
+    def vector_between_sprites(sprite_a: Entity, sprite_b: Entity) -> Vector2:
+        vec_a = Vector2(sprite_a.pos)
+        vec_b = Vector2(sprite_b.pos)
+        return vec_a - vec_b
 
-    def run(self, dt):
+    def run(self, dt: float) -> None:
         self.all_sprites.update(dt)
-        self.all_sprites.set_offset(self.player)
-        self.all_sprites.draw_floor()
-        self.all_sprites.draw_sprites()
+        self.all_sprites.draw(self.player)
 
         for monster in self.monster_sprites:
             monster.update_monster(player_pos=self.player.rect.center, dt=dt)
 
-        # TODO: Start using quadrants if we get performance issues
+        # Start using quadrants if we get performance issues
         # self.check_monster_collisions(self.create_monster_quadrants())
         self.check_monster_collisions([self.monster_sprites])
 
         if dt > 0:
-            debug(1/dt)
+            debug(round(1/dt))
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -93,17 +108,22 @@ class CameraGroup(pygame.sprite.Group):
         self.floor_rect = self.floor_surface.get_rect(topleft=(0, 0))
 
     def set_offset(self, player: Player) -> None:
-        offset_x = player.rect.centerx - self.half_width
-        offset_y = player.rect.centery - self.half_height
-        self.offset.x, self.offset.y = offset_x, offset_y
+        self.offset.x = player.rect.centerx - self.half_width
+        self.offset.y = player.rect.centery - self.half_height
 
     def draw_floor(self) -> None:
         offset_rect = self.floor_rect.copy()
         offset_rect.center -= self.offset
         self.display_surface.blit(self.floor_surface, offset_rect)
 
-    def draw_sprites(self):
+    def draw_sprites(self) -> None:
+        sprite: Entity
         for sprite in self.sprites():
             offset_rect = sprite.rect.copy()
             offset_rect.center -= self.offset
             self.display_surface.blit(sprite.image, offset_rect)
+
+    def draw(self, player: Player) -> None:
+        self.set_offset(player)
+        self.draw_floor()
+        self.draw_sprites()

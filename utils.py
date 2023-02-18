@@ -12,7 +12,8 @@ def import_images_from_folder(path: str, scale_factor: float = 1, flip: bool = F
             image = pygame.image.load(full_path).convert_alpha()
 
             image = pygame.transform.scale_by(image, scale_factor)
-            image = pygame.transform.flip(image, flip_x=flip, flip_y=False)
+            if flip:
+                image = pygame.transform.flip(image, flip_x=True, flip_y=False)
 
             surface_list.append(image)
 
