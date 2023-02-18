@@ -9,6 +9,7 @@ from entity import Entity
 from attack import Attack
 from pygame.math import Vector2
 from typing import Union
+from timer import Timer
 
 
 class Level:
@@ -21,8 +22,14 @@ class Level:
 
         self.player = Player(pos=(750, 500), groups=[self.all_sprites], create_attack=self.create_attack)
 
-        for _ in range(5):
-            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(-500, 1500), random.randint(-500, 1500)), monster_type='slime')
+        self.spawn_monsters()
+
+        self.spawn_timer = Timer(15000, self.spawn_monsters)
+        self.spawn_timer.activate()
+
+    def spawn_monsters(self):
+        for _ in range(10):
+            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(-500, 1500), random.randint(-500, 1500)), monster_type='slime', increase_xp=self.increase_player_xp)
 
     def create_monster_quadrants(self) -> list[pygame.sprite.Group]:
         nw_monsters = []
@@ -46,14 +53,17 @@ class Level:
         return [pygame.sprite.Group(nw_monsters), pygame.sprite.Group(ne_monsters), pygame.sprite.Group(se_monsters), pygame.sprite.Group(sw_monsters)]
 
     def check_attack_collisions(self) -> None:
-        colliding_attacks: dict[Monster: Attack] = pygame.sprite.groupcollide(self.monster_sprites, self.attack_sprites, dokilla=False, dokillb=False)
+        colliding_attacks: dict[Monster: Attack] = pygame.sprite.groupcollide(self.attack_sprites, self.monster_sprites, dokilla=False, dokillb=False)
         if colliding_attacks:
-            for monster, attacklist in colliding_attacks.items():
-                for attack in attacklist:
-                    if attack.attack_type == 'magic_wand':
-                        monster.health -= attack.damage
-                        attack.kill()
-                        monster.check_death()
+            for attack, monsterlist in colliding_attacks.items():
+                monster = monsterlist[0]
+                if attack.attack_type == 'magic_wand':
+                    monster.health -= attack.damage
+                    attack.kill()
+                    monster.check_death()
+
+    def increase_player_xp(self, amount: int):
+        self.player.xp += amount
 
     @staticmethod
     def check_monster_collisions(monster_quadrants: list[pygame.sprite.Group]) -> None:
@@ -75,8 +85,14 @@ class Level:
     def create_attack(self, attack_type: str) -> None:
         monster_sprites_by_distance = self.monster_sprites_sorted_by_distance()
         if attack_type == 'magic_wand':
-            nearest_monster: Monster = monster_sprites_by_distance[0]
-            Attack(pos=self.player.rect.center, direction=self.vector_between_sprites(nearest_monster, self.player).normalize(), attack_type=attack_type, groups=[self.attack_sprites, self.all_sprites])
+            for i in range(self.player.projectile_counts['magic_wand']):
+                try:
+                    nearest_monster: Monster = monster_sprites_by_distance[i]
+                except IndexError:
+                    if not monster_sprites_by_distance:
+                        continue
+                    nearest_monster: Monster = random.choice(monster_sprites_by_distance)
+                Attack(pos=self.player.rect.center, direction=self.vector_between_sprites(nearest_monster, self.player).normalize(), attack_type=attack_type, groups=[self.attack_sprites, self.all_sprites])
 
     def monster_distance_to_player(self, monster: Monster):
         return self.vector_between_sprites(self.player, monster).magnitude()
@@ -102,8 +118,12 @@ class Level:
         self.check_monster_collisions([self.monster_sprites])
         self.check_attack_collisions()
 
+        self.spawn_timer.update()
+
         if dt > 0:
-            debug(round(1/dt))
+            # debug(round(1/dt))
+            debug((self.player.weapon_levels['magic_wand'], self.player.projectile_counts['magic_wand']))
+            print(self.player.xp)
 
 
 class CameraGroup(pygame.sprite.Group):

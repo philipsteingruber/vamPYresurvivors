@@ -5,20 +5,23 @@ import pygame
 from entity import Entity
 from utils import import_images_from_folder
 from timer import Timer
+from typing import Callable
 
 
 class Monster(Entity):
-    def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], monster_type: str):
+    def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], monster_type: str, increase_xp: Callable):
         self.monster_type = monster_type
         super().__init__(groups, pos, 'idle')
-        self.movement_speed = 100
-        self.rect = self.rect.inflate(-40, -40)
-
         self.turned = Timer(200)
+        self.increase_xp = increase_xp
 
         self.animation_speed = round(random.triangular(4.5, 5.5), 2)
 
-        self.health = 100
+        if self.monster_type == 'slime':
+            self.movement_speed = 100
+            self.rect = self.rect.inflate(-40, -40)
+            self.health = 100
+            self.xp_value = 25
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'idle': [], 'walk': []}
@@ -46,6 +49,7 @@ class Monster(Entity):
     def check_death(self):
         if self.health <= 0:
             self.kill()
+            self.increase_xp(self.xp_value)
 
     def get_player_direction(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
         monster_vec = pygame.math.Vector2(self.rect.center)

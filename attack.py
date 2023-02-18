@@ -14,8 +14,8 @@ class Attack(Entity):
             self.direction = direction
             self.lifetime = Timer(duration=5000, func=self.kill)
             self.lifetime.activate()
-            self.movement_speed = 100
-            self.damage = 50
+            self.movement_speed = 150
+            self.damage = 500
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         return {'moving': import_images_from_folder(f'./assets/animation_frames/attacks/{self.attack_type}/moving/')}

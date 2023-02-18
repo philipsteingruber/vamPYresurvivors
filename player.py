@@ -4,6 +4,7 @@ from entity import Entity
 from utils import import_images_from_folder, Status
 from typing import Callable
 from timer import Timer
+from collections import defaultdict
 
 
 class Player(Entity):
@@ -15,6 +16,11 @@ class Player(Entity):
         self.attack_timers = {'magic_wand': Timer(duration=2000)}
         for timer in self.attack_timers.values():
             timer.activate()
+
+        self.projectile_counts = {'magic_wand': 2}
+        self.weapon_levels = defaultdict(int)
+        self.xp = 0
+        self.next_level_up = 50
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'down_idle': [], 'left_idle': [], 'right_idle': [], 'up_idle': [], 'down_walk': [], 'left_walk': [], 'right_walk': [], 'up_walk': []}
@@ -53,6 +59,15 @@ class Player(Entity):
 
         return direction
 
+    def level_up_weapon(self, weapon_name: str):
+        self.weapon_levels[weapon_name] += 1
+        if self.weapon_levels[weapon_name] > 8:
+            self.weapon_levels[weapon_name] = 8
+        else:
+            self.next_level_up *= 3
+            if weapon_name == 'magic_wand':
+                self.projectile_counts[weapon_name] += 1
+
     def set_status(self):
         if self.direction.magnitude() == 0:
             action = 'idle'
@@ -81,10 +96,12 @@ class Player(Entity):
         self.move(dt)
         self.set_status()
         self.animate(dt)
+
+        if self.xp >= self.next_level_up:
+            self.level_up_weapon('magic_wand')
+
         for timer in self.attack_timers.values():
             timer.update()
-        attack_type: str
-        timer: Timer
         for attack_type, timer in self.attack_timers.items():
             if not timer.active:
                 self.create_attack(attack_type)
