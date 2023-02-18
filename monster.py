@@ -43,6 +43,10 @@ class Monster(Entity):
             result_vec = result_vec.normalize()
         return result_vec
 
+    def check_death(self):
+        if self.health <= 0:
+            self.kill()
+
     def get_player_direction(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
         monster_vec = pygame.math.Vector2(self.rect.center)
         player_vec = pygame.math.Vector2(player_pos)

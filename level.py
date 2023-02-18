@@ -45,6 +45,16 @@ class Level:
 
         return [pygame.sprite.Group(nw_monsters), pygame.sprite.Group(ne_monsters), pygame.sprite.Group(se_monsters), pygame.sprite.Group(sw_monsters)]
 
+    def check_attack_collisions(self) -> None:
+        colliding_attacks: dict[Monster: Attack] = pygame.sprite.groupcollide(self.monster_sprites, self.attack_sprites, dokilla=False, dokillb=False)
+        if colliding_attacks:
+            for monster, attacklist in colliding_attacks.items():
+                for attack in attacklist:
+                    if attack.attack_type == 'magic_wand':
+                        monster.health -= attack.damage
+                        attack.kill()
+                        monster.check_death()
+
     @staticmethod
     def check_monster_collisions(monster_quadrants: list[pygame.sprite.Group]) -> None:
         sprite_radius = 14
@@ -63,13 +73,16 @@ class Level:
                         other_monster.rect.center = other_monster.pos
 
     def create_attack(self, attack_type: str) -> None:
+        monster_sprites_by_distance = self.monster_sprites_sorted_by_distance()
         if attack_type == 'magic_wand':
-            monster_sprites_by_distance = sorted(self.monster_sprites.sprites(), key=self.monster_distance_to_player)
             nearest_monster: Monster = monster_sprites_by_distance[0]
             Attack(pos=self.player.rect.center, direction=self.vector_between_sprites(nearest_monster, self.player).normalize(), attack_type=attack_type, groups=[self.attack_sprites, self.all_sprites])
 
     def monster_distance_to_player(self, monster: Monster):
         return self.vector_between_sprites(self.player, monster).magnitude()
+
+    def monster_sprites_sorted_by_distance(self) -> list[Monster]:
+        return sorted(self.monster_sprites.sprites(), key=self.monster_distance_to_player)
 
     @staticmethod
     def vector_between_sprites(sprite_a: Entity, sprite_b: Entity) -> Vector2:
@@ -87,6 +100,7 @@ class Level:
         # Start using quadrants if we get performance issues
         # self.check_monster_collisions(self.create_monster_quadrants())
         self.check_monster_collisions([self.monster_sprites])
+        self.check_attack_collisions()
 
         if dt > 0:
             debug(round(1/dt))

@@ -32,8 +32,6 @@ class Entity(pygame.sprite.Sprite):
         self.image = self.get_animation_frame_by_index(int(self.frame_index))
 
     def move(self, dt):
-        if hasattr(self, 'attack_type'):
-            print('attack moving')
         self.pos += (self.direction * self.movement_speed * dt)
         self.rect.center = self.pos
 
