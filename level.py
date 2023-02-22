@@ -10,6 +10,7 @@ from attack import Attack
 from pygame.math import Vector2
 from typing import Union
 from timer import Timer
+from utils import vector_between_sprites
 
 
 class Level:
@@ -27,7 +28,7 @@ class Level:
         self.spawn_timer = Timer(15000, self.spawn_monsters)
         self.spawn_timer.activate()
 
-    def spawn_monsters(self):
+    def spawn_monsters(self) -> None:
         for _ in range(10):
             Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(-500, 1500), random.randint(-500, 1500)), monster_type='slime', increase_xp=self.increase_player_xp)
 
@@ -56,13 +57,15 @@ class Level:
         colliding_attacks: dict[Monster: Attack] = pygame.sprite.groupcollide(self.attack_sprites, self.monster_sprites, dokilla=False, dokillb=False)
         if colliding_attacks:
             for attack, monsterlist in colliding_attacks.items():
-                monster = monsterlist[0]
+                monster = monsterlist[0]  # Each attack can only hit one monster
                 if attack.attack_type == 'magic_wand':
-                    monster.health -= attack.damage
+                    if monster.damageable:
+                        monster.invulnerable.activate()
+                        monster.health -= attack.damage
+                        monster.check_death()
                     attack.kill()
-                    monster.check_death()
 
-    def increase_player_xp(self, amount: int):
+    def increase_player_xp(self, amount: int) -> None:
         self.player.xp += amount
 
     @staticmethod
@@ -76,7 +79,7 @@ class Level:
                         continue
                     collision_vector = pygame.math.Vector2(monster.pos - other_monster.pos) * 0.5
                     if collision_vector.magnitude() < sprite_radius:
-                        collision_vector = collision_vector.normalize() * (abs(sprite_radius-collision_vector.magnitude()))
+                        collision_vector = collision_vector.normalize() * (abs(sprite_radius - collision_vector.magnitude()))
                         monster.pos += collision_vector
                         monster.rect.center = monster.pos
                         other_monster.pos -= collision_vector
@@ -92,19 +95,13 @@ class Level:
                     if not monster_sprites_by_distance:
                         continue
                     nearest_monster: Monster = random.choice(monster_sprites_by_distance)
-                Attack(pos=self.player.rect.center, direction=self.vector_between_sprites(nearest_monster, self.player).normalize(), attack_type=attack_type, groups=[self.attack_sprites, self.all_sprites])
+                Attack(pos=self.player.rect.center, direction=vector_between_sprites(nearest_monster, self.player).normalize(), attack_type=attack_type, groups=[self.attack_sprites, self.all_sprites])
 
-    def monster_distance_to_player(self, monster: Monster):
-        return self.vector_between_sprites(self.player, monster).magnitude()
+    def monster_distance_to_player(self, monster: Monster) -> float:
+        return vector_between_sprites(self.player, monster).magnitude()
 
     def monster_sprites_sorted_by_distance(self) -> list[Monster]:
         return sorted(self.monster_sprites.sprites(), key=self.monster_distance_to_player)
-
-    @staticmethod
-    def vector_between_sprites(sprite_a: Entity, sprite_b: Entity) -> Vector2:
-        vec_a = Vector2(sprite_a.pos)
-        vec_b = Vector2(sprite_b.pos)
-        return vec_a - vec_b
 
     def run(self, dt: float) -> None:
         self.all_sprites.update(dt)
@@ -121,9 +118,8 @@ class Level:
         self.spawn_timer.update()
 
         if dt > 0:
-            # debug(round(1/dt))
-            debug((self.player.weapon_levels['magic_wand'], self.player.projectile_counts['magic_wand']))
-            print(self.player.xp)
+            debug(round(1 / dt))
+            # debug((self.player.weapon_levels['magic_wand'], self.player.projectile_counts['magic_wand']))
 
 
 class CameraGroup(pygame.sprite.Group):

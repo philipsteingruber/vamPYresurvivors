@@ -8,7 +8,7 @@ from collections import defaultdict
 
 
 class Player(Entity):
-    def __init__(self, pos: tuple[int, int], groups: list[pygame.sprite.Group], create_attack: Callable):
+    def __init__(self, pos: tuple[int, int], groups: list[pygame.sprite.Group], create_attack: Callable) -> None:
         super().__init__(groups, pos, Status(direction='down', action='idle'))
 
         self.movement_speed = 250
@@ -59,7 +59,7 @@ class Player(Entity):
 
         return direction
 
-    def level_up_weapon(self, weapon_name: str):
+    def level_up_weapon(self, weapon_name: str) -> None:
         self.weapon_levels[weapon_name] += 1
         if self.weapon_levels[weapon_name] > 8:
             self.weapon_levels[weapon_name] = 8
@@ -68,7 +68,7 @@ class Player(Entity):
             if weapon_name == 'magic_wand':
                 self.projectile_counts[weapon_name] += 1
 
-    def set_status(self):
+    def set_status(self) -> None:
         if self.direction.magnitude() == 0:
             action = 'idle'
         else:
@@ -91,7 +91,7 @@ class Player(Entity):
                 self.frame_index = 0
             self.status.direction = direction
 
-    def update(self, dt):
+    def update(self, dt: float) -> None:
         self.direction = self.get_direction_normalized()
         self.move(dt)
         self.set_status()

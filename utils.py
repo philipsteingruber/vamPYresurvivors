@@ -1,6 +1,8 @@
 import os
 
 import pygame
+from pygame.math import Vector2
+from entity import Entity
 
 
 def import_images_from_folder(path: str, scale_factor: float = 1, flip: bool = False) -> list[pygame.Surface]:
@@ -18,6 +20,12 @@ def import_images_from_folder(path: str, scale_factor: float = 1, flip: bool = F
             surface_list.append(image)
 
     return surface_list
+
+
+def vector_between_sprites(sprite_a: Entity, sprite_b: Entity) -> Vector2:
+    vec_a = Vector2(sprite_a.pos)
+    vec_b = Vector2(sprite_b.pos)
+    return vec_a - vec_b
 
 
 class Status:

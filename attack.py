@@ -20,7 +20,7 @@ class Attack(Entity):
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         return {'moving': import_images_from_folder(f'./assets/animation_frames/attacks/{self.attack_type}/moving/')}
 
-    def update(self, dt):
+    def update(self, dt) -> None:
         self.lifetime.update()
         self.animate(dt)
         self.move(dt)

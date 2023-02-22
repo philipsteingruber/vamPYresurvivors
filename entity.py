@@ -25,13 +25,13 @@ class Entity(pygame.sprite.Sprite):
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         return {}
 
-    def animate(self, dt):
+    def animate(self, dt) -> None:
         self.frame_index += self.animation_speed * dt
         if self.frame_index >= len(self.animation_frames[str(self.status)]):
             self.frame_index = 0
         self.image = self.get_animation_frame_by_index(int(self.frame_index))
 
-    def move(self, dt):
+    def move(self, dt) -> None:
         self.pos += (self.direction * self.movement_speed * dt)
         self.rect.center = self.pos
 
