@@ -2,8 +2,8 @@ import os
 
 import pygame
 from pygame.math import Vector2
-from entity import Entity
-
+from dataclasses import dataclass
+from enum import Enum
 
 def import_images_from_folder(path: str, scale_factor: float = 1, flip: bool = False) -> list[pygame.Surface]:
     surface_list = []
@@ -22,16 +22,16 @@ def import_images_from_folder(path: str, scale_factor: float = 1, flip: bool = F
     return surface_list
 
 
-def vector_between_sprites(sprite_a: Entity, sprite_b: Entity) -> Vector2:
+def vector_between_sprites(sprite_a, sprite_b) -> Vector2:
     vec_a = Vector2(sprite_a.pos)
     vec_b = Vector2(sprite_b.pos)
     return vec_a - vec_b
 
 
+@dataclass
 class Status:
-    def __init__(self, direction: str, action: str) -> None:
-        self.direction = direction
-        self.action = action
+    direction: str
+    action: str
 
     def __str__(self) -> str:
         return f'{self.direction}_{self.action}'
@@ -39,3 +39,7 @@ class Status:
     def __repr__(self) -> str:
         return f'{self.direction}_{self.action}'
 
+
+class AttackType(Enum):
+    MAGIC_WAND = 'magic_wand'
+    KING_BIBLE = 'bible'

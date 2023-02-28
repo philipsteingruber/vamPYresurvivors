@@ -36,4 +36,7 @@ class Entity(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def get_animation_frame_by_index(self, index: int) -> pygame.Surface:
-        return self.animation_frames[str(self.status)][index]
+        try:
+            return self.animation_frames[str(self.status)][index]
+        except IndexError:
+            print(self.animation_frames)

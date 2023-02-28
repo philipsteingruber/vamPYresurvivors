@@ -1,7 +1,7 @@
 import pygame
 
 from entity import Entity
-from utils import import_images_from_folder, Status
+from utils import import_images_from_folder, Status, AttackType
 from typing import Callable
 from timer import Timer
 from collections import defaultdict
@@ -13,11 +13,11 @@ class Player(Entity):
 
         self.movement_speed = 250
         self.create_attack = create_attack
-        self.attack_timers = {'magic_wand': Timer(duration=2000)}
+        self.attack_timers = {AttackType.MAGIC_WAND: Timer(duration=2000)}
         for timer in self.attack_timers.values():
             timer.activate()
 
-        self.projectile_counts = {'magic_wand': 2}
+        self.projectile_counts = {AttackType.MAGIC_WAND: 2}
         self.weapon_levels = defaultdict(int)
         self.xp = 0
         self.next_level_up = 50
@@ -65,7 +65,7 @@ class Player(Entity):
             self.weapon_levels[weapon_name] = 8
         else:
             self.next_level_up *= 3
-            if weapon_name == 'magic_wand':
+            if weapon_name == AttackType.MAGIC_WAND:
                 self.projectile_counts[weapon_name] += 1
 
     def set_status(self) -> None:
@@ -98,7 +98,7 @@ class Player(Entity):
         self.animate(dt)
 
         if self.xp >= self.next_level_up:
-            self.level_up_weapon('magic_wand')
+            self.level_up_weapon(AttackType.MAGIC_WAND)
 
         for timer in self.attack_timers.values():
             timer.update()

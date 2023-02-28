@@ -2,15 +2,13 @@ import random
 
 import pygame
 
+from attack import Attack
 from debug import debug
+from entity import Entity
 from monster import Monster
 from player import Player
-from entity import Entity
-from attack import Attack
-from pygame.math import Vector2
-from typing import Union
 from timer import Timer
-from utils import vector_between_sprites
+from utils import vector_between_sprites, AttackType
 
 
 class Level:
@@ -58,7 +56,7 @@ class Level:
         if colliding_attacks:
             for attack, monsterlist in colliding_attacks.items():
                 monster = monsterlist[0]  # Each attack can only hit one monster
-                if attack.attack_type == 'magic_wand':
+                if attack.attack_type == AttackType.MAGIC_WAND:
                     if monster.damageable:
                         monster.invulnerable.activate()
                         monster.health -= attack.damage
@@ -87,8 +85,8 @@ class Level:
 
     def create_attack(self, attack_type: str) -> None:
         monster_sprites_by_distance = self.monster_sprites_sorted_by_distance()
-        if attack_type == 'magic_wand':
-            for i in range(self.player.projectile_counts['magic_wand']):
+        if attack_type == AttackType.MAGIC_WAND:
+            for i in range(self.player.projectile_counts[AttackType.MAGIC_WAND]):
                 try:
                     nearest_monster: Monster = monster_sprites_by_distance[i]
                 except IndexError:
