@@ -5,11 +5,11 @@ import pygame
 from attack import Attack
 from debug import debug
 from entity import Entity
+from experience_gem import ExperienceGem
 from monster import Monster
 from player import Player
 from timer import Timer
 from utils import vector_between_sprites, AttackType
-from experience_gem import ExperienceGem
 
 
 class Level:

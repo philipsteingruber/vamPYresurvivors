@@ -1,9 +1,9 @@
 import os
+from dataclasses import dataclass
+from enum import Enum
 
 import pygame
 from pygame.math import Vector2
-from dataclasses import dataclass
-from enum import Enum
 
 
 def import_images_from_folder(path: str, scale_factor: float = 1, flip: bool = False) -> list[pygame.Surface]:

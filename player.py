@@ -1,10 +1,11 @@
+from typing import Callable
+
 import pygame
 
 from entity import Entity
-from utils import import_images_from_folder, Status, AttackType, LevelUpType
-from typing import Callable
-from timer import Timer
 from settings import LEVEL_UP_DATA
+from timer import Timer
+from utils import import_images_from_folder, Status, AttackType, LevelUpType
 
 
 class Player(Entity):

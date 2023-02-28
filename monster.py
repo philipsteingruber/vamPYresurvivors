@@ -3,10 +3,8 @@ import random
 import pygame
 
 from entity import Entity
-from utils import import_images_from_folder
 from timer import Timer
-from typing import Callable
-import random
+from utils import import_images_from_folder
 
 
 class Monster(Entity):
