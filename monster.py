@@ -6,6 +6,7 @@ from entity import Entity
 from utils import import_images_from_folder
 from timer import Timer
 from typing import Callable
+import random
 
 
 class Monster(Entity):
@@ -21,8 +22,8 @@ class Monster(Entity):
         if self.monster_type == 'slime':
             self.movement_speed = 100
             self.rect = self.rect.inflate(-40, -40)
-            self.health = 100
-            self.xp_value = 25
+            self.health = random.randint(1, 5)
+            self.xp_value = 5
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'idle': [], 'walk': []}

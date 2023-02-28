@@ -1,10 +1,10 @@
 import pygame
 
 from entity import Entity
-from utils import import_images_from_folder, Status, AttackType
+from utils import import_images_from_folder, Status, AttackType, LevelUpType
 from typing import Callable
 from timer import Timer
-from collections import defaultdict
+from settings import LEVEL_UP_DATA
 
 
 class Player(Entity):
@@ -13,14 +13,18 @@ class Player(Entity):
 
         self.movement_speed = 250
         self.create_attack = create_attack
-        self.attack_timers = {AttackType.MAGIC_WAND: Timer(duration=2000)}
+        self.attack_timers = {AttackType.MAGIC_WAND: Timer(duration=1200)}
         for timer in self.attack_timers.values():
             timer.activate()
 
         self.projectile_counts = {AttackType.MAGIC_WAND: 2}
-        self.weapon_levels = defaultdict(int)
+        self.pierce_counts = {AttackType.MAGIC_WAND: 0}
+        self.weapon_levels = {AttackType.MAGIC_WAND: 1}
+        self.flat_damage_mods = {AttackType.MAGIC_WAND: 0}
+
         self.xp = 0
-        self.next_level_up = 50
+        self.total_level = 1
+        self.next_level_up = 5
 
     def import_frames(self) -> dict[str: list[pygame.Surface]]:
         animations = {'down_idle': [], 'left_idle': [], 'right_idle': [], 'up_idle': [], 'down_walk': [], 'left_walk': [], 'right_walk': [], 'up_walk': []}
@@ -59,14 +63,48 @@ class Player(Entity):
 
         return direction
 
-    def level_up_weapon(self, weapon_name: str) -> None:
-        self.weapon_levels[weapon_name] += 1
-        if self.weapon_levels[weapon_name] > 8:
-            self.weapon_levels[weapon_name] = 8
+    def level_up_weapon(self, attack_type: AttackType) -> None:
+        self.weapon_levels[attack_type] += 1
+        if self.weapon_levels[attack_type] > 8:
+            self.weapon_levels[attack_type] = 8
         else:
-            self.next_level_up *= 3
-            if weapon_name == AttackType.MAGIC_WAND:
-                self.projectile_counts[weapon_name] += 1
+            self.total_level += 1
+            self.increase_xp_required_for_level_up()
+
+            level_up_type, value = LEVEL_UP_DATA[attack_type][self.weapon_levels[attack_type]]
+            if level_up_type == LevelUpType.PROJECTILE_COUNT:
+                self.projectile_counts[attack_type] += 1
+            elif level_up_type == LevelUpType.COOLDOWN_MOD:
+                old_timer_duration = self.attack_timers[attack_type].duration
+                self.attack_timers[attack_type] = Timer(old_timer_duration - value)
+                self.attack_timers[attack_type].activate()
+            elif level_up_type == LevelUpType.FLAT_DAMAGE_MOD:
+                self.flat_damage_mods[attack_type] += value
+            elif level_up_type == LevelUpType.PIERCE_COUNT:
+                self.pierce_counts[attack_type] += value
+
+            print(f'\nLeveled up {attack_type}')
+            self.print_weapon_data(attack_type)
+
+    def print_weapon_data(self, attack_type):
+        print('Current level:', self.weapon_levels[attack_type],
+              'Proj count:', self.projectile_counts[attack_type],
+              'Pierce count.', self.pierce_counts[attack_type],
+              'Damage mod:', self.flat_damage_mods[attack_type],
+              'Cooldown:', self.attack_timers[attack_type].duration)
+
+    def increase_xp_required_for_level_up(self) -> None:
+        if self.total_level <= 20:
+            self.next_level_up += 10
+        elif self.total_level <= 40:
+            self.next_level_up += 13
+        else:
+            self.next_level_up += 16
+
+        if self.total_level == 20:
+            self.next_level_up += 600
+        elif self.total_level == 40:
+            self.next_level_up += 2400
 
     def set_status(self) -> None:
         if self.direction.magnitude() == 0:
@@ -86,9 +124,9 @@ class Player(Entity):
             direction = 'right'
         elif self.direction.x == -1:
             direction = 'left'
+        if direction != self.status.direction:
+            self.frame_index = 0
         if direction:
-            if direction != self.status.direction:
-                self.frame_index = 0
             self.status.direction = direction
 
     def update(self, dt: float) -> None:

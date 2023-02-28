@@ -31,10 +31,11 @@ if __name__ == '__main__':
     lines = 0
     for filename in os.listdir('./'):
         try:
-            with open(filename) as file:
-                linecount = len(file.readlines())
-                print(filename, linecount)
-                lines += linecount
+            if 'gitignore' not in filename:
+                with open(filename) as file:
+                    linecount = len(file.readlines())
+                    print(filename, linecount)
+                    lines += linecount
         except PermissionError:
             pass
     print('Full Linecount:', lines)

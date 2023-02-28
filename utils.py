@@ -43,3 +43,10 @@ class Status:
 class AttackType(Enum):
     MAGIC_WAND = 'magic_wand'
     KING_BIBLE = 'bible'
+
+
+class LevelUpType(Enum):
+    PROJECTILE_COUNT = 'projectile_count'
+    COOLDOWN_MOD = 'cooldown_mod'
+    FLAT_DAMAGE_MOD = 'flat_damage_mod'
+    PIERCE_COUNT = 'pierce_count'

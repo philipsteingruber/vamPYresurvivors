@@ -61,7 +61,10 @@ class Level:
                         monster.invulnerable.activate()
                         monster.health -= attack.damage
                         monster.check_death()
-                    attack.kill()
+                    if attack.pierce_count < 1:
+                        attack.kill()
+                    else:
+                        attack.pierce_count -= 1
 
     def increase_player_xp(self, amount: int) -> None:
         self.player.xp += amount
@@ -83,7 +86,7 @@ class Level:
                         other_monster.pos -= collision_vector
                         other_monster.rect.center = other_monster.pos
 
-    def create_attack(self, attack_type: str) -> None:
+    def create_attack(self, attack_type: AttackType) -> None:
         monster_sprites_by_distance = self.monster_sprites_sorted_by_distance()
         if attack_type == AttackType.MAGIC_WAND:
             for i in range(self.player.projectile_counts[AttackType.MAGIC_WAND]):
@@ -93,7 +96,12 @@ class Level:
                     if not monster_sprites_by_distance:
                         continue
                     nearest_monster: Monster = random.choice(monster_sprites_by_distance)
-                Attack(pos=self.player.rect.center, direction=vector_between_sprites(nearest_monster, self.player).normalize(), attack_type=attack_type, groups=[self.attack_sprites, self.all_sprites])
+                Attack(pos=self.player.rect.center,
+                       direction=vector_between_sprites(nearest_monster, self.player).normalize(),
+                       attack_type=attack_type,
+                       groups=[self.attack_sprites, self.all_sprites],
+                       pierce_count=self.player.pierce_counts[attack_type],
+                       damage_mod=self.player.flat_damage_mods[attack_type])
 
     def monster_distance_to_player(self, monster: Monster) -> float:
         return vector_between_sprites(self.player, monster).magnitude()

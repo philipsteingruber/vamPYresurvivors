@@ -6,7 +6,7 @@ from utils import Status
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, groups: Union[Sequence[pygame.sprite.Group]], pos: tuple[int, int], status: Union[Status, str]) -> None:
+    def __init__(self, groups: Union[Sequence[pygame.sprite.Group], pygame.sprite.Group], pos: tuple[int, int], status: Union[Status, str]) -> None:
         super().__init__(groups)
 
         self.animation_frames = self.import_frames()
