@@ -10,12 +10,11 @@ import random
 
 
 class Monster(Entity):
-    def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], monster_type: str, increase_xp: Callable) -> None:
+    def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], monster_type: str) -> None:
         self.monster_type = monster_type
         super().__init__(groups, pos, 'idle')
         self.turned = Timer(200)
         self.invulnerable = Timer(100)
-        self.increase_xp = increase_xp
 
         self.animation_speed = round(random.triangular(4.5, 5.5), 2)
 
@@ -52,10 +51,11 @@ class Monster(Entity):
     def damageable(self) -> bool:
         return not self.invulnerable.active
 
-    def check_death(self) -> None:
+    def check_death(self) -> bool:
         if self.health <= 0:
-            self.increase_xp(self.xp_value)
             self.kill()
+            return True
+        return False
 
     def get_player_direction(self, player_pos: tuple[int, int]) -> pygame.math.Vector2:
         monster_vec = pygame.math.Vector2(self.rect.center)

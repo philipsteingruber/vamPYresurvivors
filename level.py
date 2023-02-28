@@ -9,6 +9,7 @@ from monster import Monster
 from player import Player
 from timer import Timer
 from utils import vector_between_sprites, AttackType
+from experience_gem import ExperienceGem
 
 
 class Level:
@@ -18,6 +19,7 @@ class Level:
         self.all_sprites = CameraGroup()
         self.monster_sprites: pygame.sprite.Group[Monster] = pygame.sprite.Group()
         self.attack_sprites: pygame.sprite.Group[Attack] = pygame.sprite.Group()
+        self.xp_gem_sprites: pygame.sprite.Group[ExperienceGem] = pygame.sprite.Group()
 
         self.player = Player(pos=(750, 500), groups=[self.all_sprites], create_attack=self.create_attack)
 
@@ -28,7 +30,7 @@ class Level:
 
     def spawn_monsters(self) -> None:
         for _ in range(10):
-            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(-500, 1500), random.randint(-500, 1500)), monster_type='slime', increase_xp=self.increase_player_xp)
+            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(-500, 1500), random.randint(-500, 1500)), monster_type='slime')
 
     def create_monster_quadrants(self) -> list[pygame.sprite.Group]:
         nw_monsters = []
@@ -60,14 +62,23 @@ class Level:
                     if monster.damageable:
                         monster.invulnerable.activate()
                         monster.health -= attack.damage
-                        monster.check_death()
                     if attack.pierce_count < 1:
                         attack.kill()
                     else:
                         attack.pierce_count -= 1
+                if monster.check_death():
+                    if random.randint(1, 5) == 1:
+                        self.spawn_xp_gem(pos=monster.rect.center, value=monster.xp_value)
 
     def increase_player_xp(self, amount: int) -> None:
         self.player.xp += amount
+
+    def check_xp_gem_collisions(self):
+        colliding_gems = pygame.sprite.spritecollide(self.player, self.xp_gem_sprites, False)
+        if colliding_gems:
+            for gem in colliding_gems:
+                self.increase_player_xp(gem.value)
+                gem.kill()
 
     @staticmethod
     def check_monster_collisions(monster_quadrants: list[pygame.sprite.Group]) -> None:
@@ -109,6 +120,9 @@ class Level:
     def monster_sprites_sorted_by_distance(self) -> list[Monster]:
         return sorted(self.monster_sprites.sprites(), key=self.monster_distance_to_player)
 
+    def spawn_xp_gem(self, pos: tuple[int, int], value: int):
+        ExperienceGem([self.all_sprites, self.xp_gem_sprites], value, pos)
+
     def run(self, dt: float) -> None:
         self.all_sprites.update(dt)
         self.all_sprites.draw(self.player)
@@ -120,6 +134,7 @@ class Level:
         # self.check_monster_collisions(self.create_monster_quadrants())
         self.check_monster_collisions([self.monster_sprites])
         self.check_attack_collisions()
+        self.check_xp_gem_collisions()
 
         self.spawn_timer.update()
 

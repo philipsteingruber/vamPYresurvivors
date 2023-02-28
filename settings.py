@@ -4,6 +4,7 @@ DIMENSIONS = {'WIDTH': 1280, 'HEIGHT': 720}
 TILE_SIZE = 32
 MONSTER_SIZE = 64
 
+LEVEL_UP_DATA: dict[AttackType: dict[int: tuple[LevelUpType: int]]]
 LEVEL_UP_DATA = {
     AttackType.MAGIC_WAND: {
         2: (LevelUpType.PROJECTILE_COUNT, 1),

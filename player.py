@@ -83,9 +83,6 @@ class Player(Entity):
             elif level_up_type == LevelUpType.PIERCE_COUNT:
                 self.pierce_counts[attack_type] += value
 
-            print(f'\nLeveled up {attack_type}')
-            self.print_weapon_data(attack_type)
-
     def print_weapon_data(self, attack_type):
         print('Current level:', self.weapon_levels[attack_type],
               'Proj count:', self.projectile_counts[attack_type],
