@@ -29,33 +29,34 @@ class Level:
         self.spawn_monsters()
 
     def spawn_monsters(self) -> None:
-        player_x, player_y = self.player.rect.center
-        width = DIMENSIONS['WIDTH']
-        height = DIMENSIONS['HEIGHT']
+        if len(self.monster_sprites.sprites()) < 200:
+            player_x, player_y = self.player.rect.center
+            width = DIMENSIONS['WIDTH']
+            height = DIMENSIONS['HEIGHT']
 
-        spawn_locations = ['top', 'left', 'right', 'bottom']
-        spawn_location = random.choice(spawn_locations)
-        print(f'spawning monsters - {spawn_location}')
-        if spawn_location == 'top':
-            for _ in range(25):
-                Monster(groups=[self.all_sprites, self.monster_sprites],
-                        pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y - height // 2 - 100),
-                        monster_type='slime')
-        elif spawn_location == 'bottom':
-            for _ in range(25):
-                Monster(groups=[self.all_sprites, self.monster_sprites],
-                        pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y + height // 2 + 100),
-                        monster_type='slime')
-        elif spawn_location == 'left':
-            for _ in range(25):
-                Monster(groups=[self.all_sprites, self.monster_sprites],
-                        pos=(player_x - width // 2 - 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
-                        monster_type='slime')
-        elif spawn_location == 'right':
-            for _ in range(25):
-                Monster(groups=[self.all_sprites, self.monster_sprites],
-                        pos=(player_x + width // 2 + 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
-                        monster_type='slime')
+            spawn_locations = ['top', 'left', 'right', 'bottom']
+            spawn_location = random.choice(spawn_locations)
+            print(f'spawning monsters - {spawn_location}')
+            if spawn_location == 'top':
+                for _ in range(25):
+                    Monster(groups=[self.all_sprites, self.monster_sprites],
+                            pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y - height // 2 - 100),
+                            monster_type='slime')
+            elif spawn_location == 'bottom':
+                for _ in range(25):
+                    Monster(groups=[self.all_sprites, self.monster_sprites],
+                            pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y + height // 2 + 100),
+                            monster_type='slime')
+            elif spawn_location == 'left':
+                for _ in range(25):
+                    Monster(groups=[self.all_sprites, self.monster_sprites],
+                            pos=(player_x - width // 2 - 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
+                            monster_type='slime')
+            elif spawn_location == 'right':
+                for _ in range(25):
+                    Monster(groups=[self.all_sprites, self.monster_sprites],
+                            pos=(player_x + width // 2 + 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
+                            monster_type='slime')
 
     def create_monster_quadrants(self) -> list[pygame.sprite.Group]:
         nw_monsters = []
@@ -115,7 +116,7 @@ class Level:
                     if monster is other_monster:
                         continue
                     collision_vector = pygame.math.Vector2(monster.pos - other_monster.pos) * 0.5
-                    if collision_vector.magnitude() < sprite_radius:
+                    if sprite_radius > collision_vector.magnitude() > 0:
                         collision_vector = collision_vector.normalize() * (abs(sprite_radius - collision_vector.magnitude()))
                         monster.pos += collision_vector
                         monster.rect.center = monster.pos
