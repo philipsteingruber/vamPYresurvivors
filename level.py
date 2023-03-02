@@ -8,6 +8,7 @@ from entity import Entity
 from experience_gem import ExperienceGem
 from monster import Monster
 from player import Player
+from settings import DIMENSIONS
 from timer import Timer
 from utils import vector_between_sprites, AttackType
 
@@ -23,14 +24,38 @@ class Level:
 
         self.player = Player(pos=(750, 500), groups=[self.all_sprites], create_attack=self.create_attack)
 
+        self.spawn_timer = Timer(1000, self.spawn_monsters)
+        self.spawn_timer.activate()
         self.spawn_monsters()
 
-        self.spawn_timer = Timer(15000, self.spawn_monsters)
-        self.spawn_timer.activate()
-
     def spawn_monsters(self) -> None:
-        for _ in range(10):
-            Monster(groups=[self.all_sprites, self.monster_sprites], pos=(random.randint(-500, 1500), random.randint(-500, 1500)), monster_type='slime')
+        player_x, player_y = self.player.rect.center
+        width = DIMENSIONS['WIDTH']
+        height = DIMENSIONS['HEIGHT']
+
+        spawn_locations = ['top', 'left', 'right', 'bottom']
+        spawn_location = random.choice(spawn_locations)
+        print(f'spawning monsters - {spawn_location}')
+        if spawn_location == 'top':
+            for _ in range(25):
+                Monster(groups=[self.all_sprites, self.monster_sprites],
+                        pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y - height // 2 - 100),
+                        monster_type='slime')
+        elif spawn_location == 'bottom':
+            for _ in range(25):
+                Monster(groups=[self.all_sprites, self.monster_sprites],
+                        pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y + height // 2 + 100),
+                        monster_type='slime')
+        elif spawn_location == 'left':
+            for _ in range(25):
+                Monster(groups=[self.all_sprites, self.monster_sprites],
+                        pos=(player_x - width // 2 - 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
+                        monster_type='slime')
+        elif spawn_location == 'right':
+            for _ in range(25):
+                Monster(groups=[self.all_sprites, self.monster_sprites],
+                        pos=(player_x + width // 2 + 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
+                        monster_type='slime')
 
     def create_monster_quadrants(self) -> list[pygame.sprite.Group]:
         nw_monsters = []
@@ -136,11 +161,14 @@ class Level:
         self.check_attack_collisions()
         self.check_xp_gem_collisions()
 
-        self.spawn_timer.update()
+        if self.spawn_timer.active:
+            self.spawn_timer.update()
+        else:
+            self.spawn_timer.activate()
 
         if dt > 0:
-            debug(round(1 / dt))
-            # debug((self.player.weapon_levels['magic_wand'], self.player.projectile_counts['magic_wand']))
+            # debug(round(1 / dt))
+            debug(len(self.monster_sprites.sprites()))
 
 
 class CameraGroup(pygame.sprite.Group):
