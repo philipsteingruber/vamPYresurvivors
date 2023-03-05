@@ -11,13 +11,13 @@ class Monster(Entity):
     def __init__(self, groups: list[pygame.sprite.Group], pos: tuple[int, int], monster_type: str) -> None:
         self.monster_type = monster_type
         super().__init__(groups, pos, 'idle')
-        self.turned = Timer(200)
+        self.turned = Timer(400)
         self.invulnerable = Timer(100)
 
         self.animation_speed = round(random.triangular(4.5, 5.5), 2)
 
         if self.monster_type == 'slime':
-            self.movement_speed = 100
+            self.movement_speed = 75
             self.rect = self.rect.inflate(-40, -40)
             self.health = random.randint(1, 5)
             self.xp_value = 5

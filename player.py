@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 
 import pygame
@@ -11,6 +12,8 @@ from utils import import_images_from_folder, Status, AttackType, LevelUpType
 class Player(Entity):
     def __init__(self, pos: tuple[int, int], groups: list[pygame.sprite.Group], create_attack: Callable) -> None:
         super().__init__(groups, pos, Status(direction='down', action='idle'))
+        self.logger = logging.getLogger('player')
+        self.logger.debug('player initialized')
 
         self.movement_speed = 250
         self.create_attack = create_attack

@@ -1,4 +1,5 @@
 import random
+import logging
 
 import pygame
 
@@ -15,6 +16,8 @@ from utils import vector_between_sprites, AttackType
 
 class Level:
     def __init__(self) -> None:
+        self.logger = logging.getLogger('level')
+
         self.display_surface = pygame.display.get_surface()
 
         self.all_sprites = CameraGroup()
@@ -22,7 +25,7 @@ class Level:
         self.attack_sprites: pygame.sprite.Group[Attack] = pygame.sprite.Group()
         self.xp_gem_sprites: pygame.sprite.Group[ExperienceGem] = pygame.sprite.Group()
 
-        self.player = Player(pos=(750, 500), groups=[self.all_sprites], create_attack=self.create_attack)
+        self.player = Player(pos=(1750, 1500), groups=[self.all_sprites], create_attack=self.create_attack)
 
         self.spawn_timer = Timer(1000, self.spawn_monsters)
         self.spawn_timer.activate()
@@ -36,27 +39,29 @@ class Level:
 
             spawn_locations = ['top', 'left', 'right', 'bottom']
             spawn_location = random.choice(spawn_locations)
-            print(f'spawning monsters - {spawn_location}')
             if spawn_location == 'top':
                 for _ in range(25):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
-                            pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y - height // 2 - 100),
+                            pos=(random.randint(player_x - width // 2 - 200, player_x + width // 2 + 200), player_y - height // 2 - 200),
                             monster_type='slime')
             elif spawn_location == 'bottom':
                 for _ in range(25):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
-                            pos=(random.randint(player_x - width // 2 - 100, player_x + width // 2 + 100), player_y + height // 2 + 100),
+                            pos=(random.randint(player_x - width // 2 - 200, player_x + width // 2 + 200), player_y + height // 2 + 200),
                             monster_type='slime')
             elif spawn_location == 'left':
                 for _ in range(25):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
-                            pos=(player_x - width // 2 - 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
+                            pos=(player_x - width // 2 - 200, random.randint(player_y - height // 2 - 200, player_y + height // 2 + 200)),
                             monster_type='slime')
             elif spawn_location == 'right':
                 for _ in range(25):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
-                            pos=(player_x + width // 2 + 100, random.randint(player_y - height // 2 - 100, player_y + height // 2 + 100)),
+                            pos=(player_x + width // 2 + 200, random.randint(player_y - height // 2 - 200, player_y + height // 2 + 200)),
                             monster_type='slime')
+            self.logger.debug(f'Spawning monsters at location {spawn_location}')
+        else:
+            self.logger.debug('Not spawning monsters, too many monsters already spawned.')
 
     def create_monster_quadrants(self) -> list[pygame.sprite.Group]:
         nw_monsters = []
@@ -93,7 +98,7 @@ class Level:
                     else:
                         attack.pierce_count -= 1
                 if monster.check_death():
-                    if random.randint(1, 5) == 1:
+                    if random.randint(1, 10) == 1:
                         self.spawn_xp_gem(pos=monster.rect.center, value=monster.xp_value)
 
     def increase_player_xp(self, amount: int) -> None:

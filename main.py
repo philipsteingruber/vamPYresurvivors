@@ -2,6 +2,7 @@ import os
 import sys
 
 import pygame
+import logging
 
 from level import Level
 from settings import DIMENSIONS
@@ -13,7 +14,10 @@ class Game:
         self.screen = pygame.display.set_mode(tuple(DIMENSIONS.values()))
         pygame.display.set_caption('vamPYre survivors')
         self.clock = pygame.time.Clock()
+
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
         self.level = Level()
+
 
     def run(self) -> None:
         while True:
