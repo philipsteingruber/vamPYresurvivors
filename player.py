@@ -73,6 +73,7 @@ class Player(Entity):
             self.weapon_levels[attack_type] = 8
         else:
             self.total_level += 1
+            self.xp = 0
             self.increase_xp_required_for_level_up()
 
             level_up_type, value = LEVEL_UP_DATA[attack_type][self.weapon_levels[attack_type]]
