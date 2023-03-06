@@ -9,6 +9,7 @@
 * [ ] Välja vapen att levla upp
 * [ ] Passiva items
 * [ ] Explosioner
+* [ ] Knockback
 
 ### Vapen
 * [ ] Runetracer
