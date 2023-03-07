@@ -15,5 +15,9 @@
 * [ ] Runetracer
 * [ ] Santa Water
 * [ ] King Bible
+  * [x] Spawna projektiler
+  * [x] Rotera projektiler runt spelaren
+  * [ ] Hantera kollisioner med monster
+  * [ ] Fixa levelups
 * [ ] Fire Wand
 * [ ] Pistolerna

@@ -7,6 +7,7 @@ from entity import Entity
 from settings import LEVEL_UP_DATA
 from timer import Timer
 from utils import import_images_from_folder, Status, AttackType, LevelUpType
+from kingbible import KingBibleGenerator
 
 
 class Player(Entity):
@@ -21,7 +22,7 @@ class Player(Entity):
         for timer in self.attack_timers.values():
             timer.activate()
 
-        self.projectile_counts = {AttackType.MAGIC_WAND: 2}
+        self.projectile_counts = {AttackType.MAGIC_WAND: 2, AttackType.KING_BIBLE: 1}
         self.pierce_counts = {AttackType.MAGIC_WAND: 0}
         self.weapon_levels = {AttackType.MAGIC_WAND: 1}
         self.flat_damage_mods = {AttackType.MAGIC_WAND: 0}

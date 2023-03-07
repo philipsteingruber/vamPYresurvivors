@@ -12,6 +12,7 @@ from player import Player
 from settings import DIMENSIONS
 from timer import Timer
 from utils import vector_between_sprites, AttackType
+from kingbible import KingBibleProjectile, KingBibleGenerator
 
 
 class Level:
@@ -23,9 +24,12 @@ class Level:
         self.all_sprites = CameraGroup()
         self.monster_sprites: pygame.sprite.Group[Monster] = pygame.sprite.Group()
         self.attack_sprites: pygame.sprite.Group[Attack] = pygame.sprite.Group()
+        self.kingbible_sprites: pygame.sprite.Group[KingBibleProjectile] = pygame.sprite.Group()
         self.xp_gem_sprites: pygame.sprite.Group[ExperienceGem] = pygame.sprite.Group()
 
         self.player = Player(pos=(1750, 1500), groups=[self.all_sprites], create_attack=self.create_attack)
+        # self.player = Player(pos=(100, 100), groups=[self.all_sprites], create_attack=self.create_attack)
+        self.kingbible_generator = KingBibleGenerator([self.all_sprites, self.attack_sprites, self.kingbible_sprites], self.player.projectile_counts[AttackType.KING_BIBLE])
 
         self.spawn_timer = Timer(1000, self.spawn_monsters)
         self.spawn_timer.activate()
@@ -97,6 +101,8 @@ class Level:
                         attack.kill()
                     else:
                         attack.pierce_count -= 1
+                if attack.attack_type == AttackType.KING_BIBLE:
+                    pass
                 if monster.check_death():
                     if random.randint(1, 10) == 1:
                         self.spawn_xp_gem(pos=monster.rect.center, value=monster.xp_value)
@@ -155,11 +161,14 @@ class Level:
         ExperienceGem([self.all_sprites, self.xp_gem_sprites], value, pos)
 
     def run(self, dt: float) -> None:
+        player_pos = self.player.rect.center
         self.all_sprites.update(dt)
         self.all_sprites.draw(self.player)
 
+        self.kingbible_generator.update(dt, player_pos)
+
         for monster in self.monster_sprites:
-            monster.update_monster(player_pos=self.player.rect.center, dt=dt)
+            monster.update_monster(player_pos=player_pos, dt=dt)
 
         # Start using quadrants if we get performance issues
         # self.check_monster_collisions(self.create_monster_quadrants())
