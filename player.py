@@ -22,7 +22,7 @@ class Player(Entity):
         for timer in self.attack_timers.values():
             timer.activate()
 
-        self.projectile_counts = {AttackType.MAGIC_WAND: 2, AttackType.KING_BIBLE: 1}
+        self.projectile_counts = {AttackType.MAGIC_WAND: 2, AttackType.KING_BIBLE: 5}
         self.pierce_counts = {AttackType.MAGIC_WAND: 0}
         self.weapon_levels = {AttackType.MAGIC_WAND: 1}
         self.flat_damage_mods = {AttackType.MAGIC_WAND: 0}

@@ -15,6 +15,7 @@ class KingBibleGenerator(pygame.sprite.Group):
         self.radius = 150
         self.lifetime = Timer(3000, self.kill_all_sprites)
         self.cooldown = Timer(3000)
+        self.damage = 10
 
         self.logger = logging.getLogger('kingbiblegenerator')
 
@@ -34,7 +35,7 @@ class KingBibleGenerator(pygame.sprite.Group):
 
     def create_sprites(self, player_pos):
         for angle in self.initial_angles:
-            KingBibleProjectile(groups=(self, self.groups), initial_angle=angle, player_pos=player_pos, radius=self.radius, image=self.projectile_image, rotation_speed=self.rotation_speed)
+            KingBibleProjectile(groups=(self, self.groups), initial_angle=angle, player_pos=player_pos, radius=self.radius, image=self.projectile_image, rotation_speed=self.rotation_speed, damage=self.damage)
         self.lifetime.activate()
 
     def update_sprites(self, dt, player_pos):
@@ -55,7 +56,7 @@ class KingBibleGenerator(pygame.sprite.Group):
 
 
 class KingBibleProjectile(pygame.sprite.Sprite):
-    def __init__(self, groups, initial_angle, player_pos, image, radius, rotation_speed):
+    def __init__(self, groups, initial_angle, player_pos, image, radius, rotation_speed, damage):
         super().__init__(groups)
 
         self.attack_type = AttackType.KING_BIBLE
@@ -66,6 +67,8 @@ class KingBibleProjectile(pygame.sprite.Sprite):
         self.angle = self.initial_angle
         self.rotation_speed = rotation_speed
         self.radius = radius
+
+        self.damage = damage
 
         self.pos = self.set_pos(self.radius, self.angle, player_pos)
         self.rect = self.image.get_rect(center=self.pos)

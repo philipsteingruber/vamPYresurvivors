@@ -13,6 +13,7 @@ from settings import DIMENSIONS
 from timer import Timer
 from utils import vector_between_sprites, AttackType
 from kingbible import KingBibleProjectile, KingBibleGenerator
+import functools
 
 
 class Level:
@@ -31,11 +32,11 @@ class Level:
         # self.player = Player(pos=(100, 100), groups=[self.all_sprites], create_attack=self.create_attack)
         self.kingbible_generator = KingBibleGenerator([self.all_sprites, self.attack_sprites, self.kingbible_sprites], self.player.projectile_counts[AttackType.KING_BIBLE])
 
-        self.spawn_timer = Timer(1000, self.spawn_monsters)
+        self.spawn_timer = Timer(10000, functools.partial(self.spawn_monsters, 25))
         self.spawn_timer.activate()
-        self.spawn_monsters()
+        self.spawn_monsters(10)
 
-    def spawn_monsters(self) -> None:
+    def spawn_monsters(self, monster_count: int) -> None:
         if len(self.monster_sprites.sprites()) < 200:
             player_x, player_y = self.player.rect.center
             width = DIMENSIONS['WIDTH']
@@ -44,26 +45,26 @@ class Level:
             spawn_locations = ['top', 'left', 'right', 'bottom']
             spawn_location = random.choice(spawn_locations)
             if spawn_location == 'top':
-                for _ in range(25):
+                for _ in range(monster_count):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
                             pos=(random.randint(player_x - width // 2 - 200, player_x + width // 2 + 200), player_y - height // 2 - 200),
                             monster_type='slime')
             elif spawn_location == 'bottom':
-                for _ in range(25):
+                for _ in range(monster_count):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
                             pos=(random.randint(player_x - width // 2 - 200, player_x + width // 2 + 200), player_y + height // 2 + 200),
                             monster_type='slime')
             elif spawn_location == 'left':
-                for _ in range(25):
+                for _ in range(monster_count):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
                             pos=(player_x - width // 2 - 200, random.randint(player_y - height // 2 - 200, player_y + height // 2 + 200)),
                             monster_type='slime')
             elif spawn_location == 'right':
-                for _ in range(25):
+                for _ in range(monster_count):
                     Monster(groups=[self.all_sprites, self.monster_sprites],
                             pos=(player_x + width // 2 + 200, random.randint(player_y - height // 2 - 200, player_y + height // 2 + 200)),
                             monster_type='slime')
-            self.logger.debug(f'Spawning monsters at location {spawn_location}')
+            self.logger.debug(f'Spawning {monster_count} monsters at location {spawn_location}')
         else:
             self.logger.debug('Not spawning monsters, too many monsters already spawned.')
 
@@ -102,7 +103,9 @@ class Level:
                     else:
                         attack.pierce_count -= 1
                 if attack.attack_type == AttackType.KING_BIBLE:
-                    pass
+                    if monster.damageable:
+                        monster.invulnerable.activate()
+                        monster.health -= attack.damage
                 if monster.check_death():
                     if random.randint(1, 10) == 1:
                         self.spawn_xp_gem(pos=monster.rect.center, value=monster.xp_value)
